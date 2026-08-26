@@ -113,18 +113,35 @@ async function fetchSummaryWithClaude(transcript: string, videoTitle: string): P
     }
 
     // Strip reasoning tags (<think>...</think>) if present
-    let summaryMd = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
+    let rawStr = rawContent.replace(/<think>[\s\S]*?<\/think>/gi, '').trim();
 
-    // Strip outer markdown code fences if wrapped in ```markdown ... ```
-    if (summaryMd.startsWith('```markdown') && summaryMd.endsWith('```')) {
-      summaryMd = summaryMd.slice('```markdown'.length, -3).trim();
-    } else if (summaryMd.startsWith('```md') && summaryMd.endsWith('```')) {
-      summaryMd = summaryMd.slice('```md'.length, -3).trim();
-    } else if (summaryMd.startsWith('```') && summaryMd.endsWith('```')) {
-      summaryMd = summaryMd.slice(3, -3).trim();
+    // Strip markdown code fences if wrapped
+    if (rawStr.includes('```')) {
+      const match = rawStr.match(/```(?:json|markdown|md)?\s*([\s\S]*?)\s*```/);
+      if (match) {
+        rawStr = match[1].trim();
+      }
     }
 
-    return summaryMd;
+    // Try parsing as JSON object to extract description
+    let summaryText = rawStr;
+    const firstBrace = rawStr.indexOf('{');
+    const lastBrace = rawStr.lastIndexOf('}');
+    if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+      try {
+        const jsonContent = rawStr.slice(firstBrace, lastBrace + 1);
+        const parsed = JSON.parse(jsonContent);
+        if (parsed && typeof parsed.description === 'string' && parsed.description.trim()) {
+          summaryText = parsed.description.trim();
+        } else if (parsed && typeof parsed.summary === 'string' && parsed.summary.trim()) {
+          summaryText = parsed.summary.trim();
+        }
+      } catch {
+        // Fallback to raw string if JSON parsing fails
+      }
+    }
+
+    return summaryText;
   } finally {
     // Cleanup temporary files
     try {
