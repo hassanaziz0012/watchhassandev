@@ -1,69 +1,90 @@
-import Image from "next/image";
+import { Navbar } from "@/components/navbar";
+import { Footer } from "@/components/footer";
+import { ResumeShowcase } from "@/components/resume-showcase";
+import {
+  ArrowUpRight,
+  Calendar,
+  Globe,
+  ArrowDown,
+} from "lucide-react";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary-500 selection:text-white font-sans">
+      {/* Background ambient lighting effects */}
+      <div
+        className="pointer-events-none fixed inset-0 overflow-hidden -z-10"
+        aria-hidden="true"
+      >
+        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[680px] h-[380px] bg-gradient-to-b from-primary-500/15 via-primary-600/10 to-transparent blur-3xl opacity-70 dark:opacity-40" />
+        <div className="absolute top-[40%] -right-40 w-[420px] h-[420px] bg-primary-500/10 blur-3xl rounded-full opacity-50 dark:opacity-25" />
+      </div>
+
+      {/* Top Navigation Bar */}
+      <Navbar />
+
+      {/* Main Container */}
+      <main className="flex-1 w-full flex flex-col">
+        {/* Hero Section (Above the fold) */}
+        <section className="min-h-[calc(88vh-4rem)] flex flex-col items-center justify-center text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full py-16 sm:py-20 space-y-8">
+          <div className="space-y-5 max-w-3xl mx-auto">
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.12]">
+              Private video hosting for hassandev.me
+            </h1>
+
+            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
+              I built this platform to deliver client walkthroughs, project milestones, and technical demos. To watch me build this whole platform live, check out my YouTube channel.
+            </p>
+          </div>
+
+          {/* Quick CTAs */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2 w-full sm:w-auto">
             <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href="https://hassandev.me"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 cursor-pointer"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
+              <Globe className="h-4 w-4" />
+              <span>Visit Main Website (hassandev.me)</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </a>
+
             <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              href="https://calendly.com/itshassanaziz/discuss-a-project"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-slate-700 dark:text-primary-200 bg-white dark:bg-primary-950/60 hover:bg-slate-50 dark:hover:bg-primary-900/60 border border-slate-200 dark:border-primary-900/60 transition-all duration-200 shadow-xs hover:-translate-y-0.5 cursor-pointer"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              <Calendar className="h-4 w-4 text-primary-600 dark:text-primary-400" />
+              <span>Book a Project Discussion</span>
+            </a>
+          </div>
+
+          {/* Prompt to scroll to resume */}
+          <div className="pt-8 sm:pt-12">
+            <a
+              href="#resume"
+              className="inline-flex items-center gap-2 text-xs font-medium text-slate-400 hover:text-primary-600 dark:text-slate-500 dark:hover:text-primary-400 transition-colors group"
+            >
+              <span>Explore Resume &amp; Background</span>
+              <ArrowDown className="h-3.5 w-3.5 group-hover:translate-y-0.5 transition-transform" />
+            </a>
+          </div>
+        </section>
+
+        {/* Resume Section (Below the fold) */}
+        <section
+          id="resume"
+          aria-label="Resume & Background"
+          className="w-full border-t border-slate-200/80 dark:border-primary-950/80 transition-colors"
+        >
+          <ResumeShowcase />
+        </section>
       </main>
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }
