@@ -7,7 +7,6 @@ import { Footer } from '@/components/footer';
 import { PageViewTracker } from '@/components/page-view-tracker';
 import { resolveVideo } from '@/lib/resolve-video';
 import { Keyboard, Calendar, ArrowUpRight } from 'lucide-react';
-import { FaYoutube } from 'react-icons/fa6';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -83,7 +82,7 @@ export default async function WatchPage({ params }: PageProps) {
               {/* Channel Profile Info */}
               <div className="flex items-center gap-3">
                 <a
-                  href="https://www.youtube.com/@itshassanaziz?sub_confirmation=1"
+                  href="https://hassandev.me"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="relative shrink-0 group block"
@@ -97,33 +96,18 @@ export default async function WatchPage({ params }: PageProps) {
                     priority
                   />
                 </a>
-                <div className="flex flex-col">
-                  <a
-                    href="https://www.youtube.com/@itshassanaziz?sub_confirmation=1"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-bold text-base text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors inline-flex items-center gap-1.5"
-                  >
-                    <span>Hassan Aziz</span>
-                  </a>
-                  <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
-                    @itshassanaziz
-                  </span>
-                </div>
+                <a
+                  href="https://hassandev.me"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="font-bold text-base text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors inline-flex items-center gap-1.5"
+                >
+                  <span>Hassan Aziz</span>
+                </a>
               </div>
 
               {/* Action Buttons */}
               <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                <a
-                  href="https://www.youtube.com/@itshassanaziz?sub_confirmation=1"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-slate-900 dark:text-white bg-slate-100 hover:bg-slate-200 dark:bg-primary-950/80 dark:hover:bg-primary-900/80 border border-slate-200/80 dark:border-primary-900/60 transition-all duration-200 active:scale-[0.98] shadow-2xs"
-                >
-                  <FaYoutube className="h-4 w-4 text-red-600" />
-                  <span>Subscribe</span>
-                </a>
-
                 <a
                   href="https://calendly.com/itshassanaziz/discuss-a-project"
                   target="_blank"
@@ -142,12 +126,12 @@ export default async function WatchPage({ params }: PageProps) {
         {/* Video Summary Section */}
         {summary && <VideoSummary markdown={summary} />}
 
-        {/* Player Keyboard Shortcuts */}
+        {/* Shortcuts */}
         <section aria-label="Keyboard Shortcuts" className="pt-2">
           <div className="p-6 rounded-2xl bg-white dark:bg-primary-1000/50 border border-slate-200/80 dark:border-primary-950/80 shadow-xs dark:shadow-none space-y-4">
             <div className="flex items-center gap-2 text-slate-700 dark:text-primary-300">
               <Keyboard className="h-5 w-5 text-primary-600 dark:text-primary-400" />
-              <h2 className="text-base font-semibold text-slate-900 dark:text-white">Player Keyboard Shortcuts</h2>
+              <h2 className="text-base font-semibold text-slate-900 dark:text-white">Shortcuts</h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs">
               <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50/80 dark:bg-black/40 border border-slate-200/70 dark:border-primary-950">
