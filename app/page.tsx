@@ -33,7 +33,7 @@ export default function Home() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              I built this platform to deliver client walkthroughs, project milestones, and technical demos. To watch me build this whole platform live, check out my YouTube channel.
+              I built this platform to deliver client walkthroughs, project milestones, and technical demos. It's my own custom self-hosted alternative to Loom.
             </p>
           </div>
 
@@ -46,7 +46,7 @@ export default function Home() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 cursor-pointer"
             >
               <Globe className="h-4 w-4" />
-              <span>Visit Main Website (hassandev.me)</span>
+              <span>Visit hassandev.me</span>
               <ArrowUpRight className="h-4 w-4" />
             </a>
 
@@ -57,7 +57,7 @@ export default function Home() {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl font-semibold text-sm text-slate-700 dark:text-primary-200 bg-white dark:bg-primary-950/60 hover:bg-slate-50 dark:hover:bg-primary-900/60 border border-slate-200 dark:border-primary-900/60 transition-all duration-200 shadow-xs hover:-translate-y-0.5 cursor-pointer"
             >
               <Calendar className="h-4 w-4 text-primary-600 dark:text-primary-400" />
-              <span>Book a Project Discussion</span>
+              <span>Book a meeting</span>
             </a>
           </div>
 
