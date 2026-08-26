@@ -2,14 +2,13 @@
 
 import { useState, useMemo } from 'react';
 import { marked } from 'marked';
-import { Sparkles, Copy, Check, ChevronDown, ChevronUp, Bot, Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
 
 interface VideoSummaryProps {
   markdown: string;
 }
 
 export function VideoSummary({ markdown }: VideoSummaryProps) {
-  const [copied, setCopied] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
   // Compute estimated reading time (approx. 200 words per minute)
@@ -31,65 +30,23 @@ export function VideoSummary({ markdown }: VideoSummaryProps) {
     }
   }, [markdown]);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(markdown);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy summary:', err);
-    }
-  };
-
   return (
     <section aria-label="AI Video Summary" className="pt-2">
       <div className="rounded-2xl bg-white dark:bg-primary-1000/50 border border-slate-200/80 dark:border-primary-950/80 shadow-xs dark:shadow-none overflow-hidden transition-all duration-300">
         {/* Summary Card Header */}
         <div className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-primary-950/60 bg-slate-50/50 dark:bg-primary-1000/20">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-primary-500/10 dark:bg-primary-500/20 flex items-center justify-center text-primary-600 dark:text-primary-400 shrink-0 ring-1 ring-primary-500/20">
-              <Sparkles className="h-5 w-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-                  Video Summary & Takeaways
-                </h2>
-              </div>
-              <div className="flex items-center gap-3 mt-1 text-xs text-slate-500 dark:text-primary-400">
-                <span className="inline-flex items-center gap-1">
-                  <Bot className="h-3.5 w-3.5 text-primary-500" />
-                  Claude AI
-                </span>
-                <span>•</span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="h-3.5 w-3.5" />
-                  {readTime}
-                </span>
-              </div>
+          <div>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
+              Video Summary & Takeaways
+            </h2>
+            <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500 dark:text-primary-400">
+              <Clock className="h-3.5 w-3.5" />
+              <span>{readTime}</span>
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2 self-end sm:self-auto">
-            <button
-              onClick={handleCopy}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-primary-300 bg-white dark:bg-primary-950/60 hover:bg-slate-100 dark:hover:bg-primary-900/60 border border-slate-200 dark:border-primary-900/50 shadow-2xs hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
-              title="Copy markdown summary"
-            >
-              {copied ? (
-                <>
-                  <Check className="h-3.5 w-3.5 text-emerald-500" />
-                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="h-3.5 w-3.5 text-slate-500 dark:text-primary-400" />
-                  <span>Copy</span>
-                </>
-              )}
-            </button>
-
             <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold text-slate-700 dark:text-primary-300 bg-white dark:bg-primary-950/60 hover:bg-slate-100 dark:hover:bg-primary-900/60 border border-slate-200 dark:border-primary-900/50 shadow-2xs hover:text-slate-900 dark:hover:text-white transition-all cursor-pointer"
