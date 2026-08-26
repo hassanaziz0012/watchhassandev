@@ -1,26 +1,68 @@
 @import "tailwindcss";
+@import "vidstack/styles/defaults.css";
+@import "vidstack/styles/community-skin/video.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:where(.dark, .dark *));
 
-@theme inline {
+@theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-primary-50: hsl(207 95% 98%);
+  --color-primary-100: hsl(207 96% 93%);
+  --color-primary-200: hsl(207 97% 85%);
+  --color-primary-300: hsl(207 98% 75%);
+  --color-primary-400: hsl(207 99% 63%);
+  --color-primary-500: hsl(207 100% 50%);
+  --color-primary-600: hsl(207 99% 43%);
+  --color-primary-700: hsl(207 98% 36%);
+  --color-primary-800: hsl(207 97% 28%);
+  --color-primary-900: hsl(207 96% 20%);
+  --color-primary-950: hsl(207 95% 13%);
+  --color-primary-1000: hsl(207 94% 7%);
+
+  --font-sans: var(--font-inter);
+}
+
+:root {
+  --background: #f8fafc;
+  --foreground: #0f172a;
+  --video-brand: hsl(207, 100%, 50%);
+  --brand: hsl(207, 100%, 50%);
+  --video-focus-ring: 0 0 0 3px hsl(207, 100%, 50% / 0.5);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not(.light) {
+    --background: #06090e;
+    --foreground: #f0f8ff;
   }
 }
 
+.dark {
+  --background: #06090e;
+  --foreground: #f0f8ff;
+}
+
 body {
-  background: var(--background);
+  background-color: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif);
+}
+
+/* Custom Vidstack Styling Enhancements with Brand Shades */
+media-player {
+  --media-brand: hsl(207, 100%, 50%);
+  --video-brand: hsl(207, 100%, 50%);
+  --media-focus-ring: 0 0 0 3px hsl(207, 100%, 50% / 0.4);
+  position: relative;
+  aspect-ratio: 16 / 9;
+  width: 100%;
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+media-community-skin {
+  --video-brand: hsl(207, 100%, 50%);
+  --media-slider-track-fill-bg: hsl(207, 100%, 50%);
+  --media-slider-thumb-bg: hsl(207, 100%, 50%);
 }
