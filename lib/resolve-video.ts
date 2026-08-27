@@ -1,14 +1,15 @@
-const R2_BASE_URL = (
-  process.env.NEXT_PUBLIC_R2_PUBLIC_URL ||
-  'https://loom-worker.hassanaziz0012.workers.dev'
-).replace(/\/+$/, '');
+const rawBucketUrl = process.env.CLOUDFLARE_BUCKET_URL || '';
+const normalizedBucketUrl = rawBucketUrl && !/^https?:\/\//i.test(rawBucketUrl)
+  ? `https://${rawBucketUrl}`
+  : rawBucketUrl;
+const R2_BASE_URL = normalizedBucketUrl.replace(/\/+$/, '');
 
 export interface ResolvedVideo {
-  filename: string;
+  folder: string;
   videoUrl: string;
-  vttFilename: string;
+  thumbnailUrl: string;
   vttUrl: string;
-  summaryFilename: string;
+  captionsUrl: string;
   summaryUrl: string;
   title: string;
   uuid: string | null;
@@ -20,14 +21,14 @@ const UUID_REGEX = /[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-
 export function resolveVideo(id: string): ResolvedVideo {
   const decoded = decodeURIComponent(id).trim();
 
-  // The id represents the filename without the file extension
+  // The id represents the folder name (e.g. {filename}-{uuid})
   const slug = decoded;
-  const filename = `${slug}.mp4`;
-  const videoUrl = `${R2_BASE_URL}/${filename}`;
-  const vttFilename = `${slug}.vtt`;
-  const vttUrl = `${R2_BASE_URL}/${vttFilename}`;
-  const summaryFilename = `${slug}.md`;
-  const summaryUrl = `${R2_BASE_URL}/${summaryFilename}`;
+  const folderUrl = `${R2_BASE_URL}/${slug}`;
+  const videoUrl = `${folderUrl}/video.mp4`;
+  const thumbnailUrl = `${folderUrl}/thumbnail.png`;
+  const vttUrl = `${folderUrl}/chapters.vtt`;
+  const captionsUrl = `${folderUrl}/captions.vtt`;
+  const summaryUrl = `${folderUrl}/summary.md`;
 
   // Extract UUID if present in {filename}-{uuid}
   const uuidMatch = slug.match(UUID_REGEX);
@@ -44,11 +45,11 @@ export function resolveVideo(id: string): ResolvedVideo {
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
   return {
-    filename,
+    folder: slug,
     videoUrl,
-    vttFilename,
+    thumbnailUrl,
     vttUrl,
-    summaryFilename,
+    captionsUrl,
     summaryUrl,
     title,
     uuid,
