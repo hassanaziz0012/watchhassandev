@@ -36,7 +36,7 @@ if (!bucket) {
 }
 
 const publicR2Url = bucketUrl.startsWith('http') ? bucketUrl.replace(/\/$/, '') : `https://${bucketUrl.replace(/\/$/, '')}`;
-const appUrl = process.env.APP_URL || 'http://localhost:3000';
+const appUrl = (process.env.APP_URL || 'https://watch.hassandev.me').replace(/\/$/, '');
 
 const uuid = crypto.randomUUID().toLowerCase();
 const rawName = destArg || path.basename(inputFile);
