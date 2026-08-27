@@ -10,7 +10,8 @@
     "auth:sheets": "bun scripts/auth-sheets.ts",
     "chapters:generate": "bun scripts/generate_chapters.ts",
     "summary:generate": "bun scripts/generate_summary.ts",
-    "storage:overview": "bun scripts/storage_overview.ts"
+    "storage:overview": "bun scripts/storage_overview.ts",
+    "upload:r2": "bun scripts/upload_to_r2.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10",
