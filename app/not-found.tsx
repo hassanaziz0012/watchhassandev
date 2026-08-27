@@ -22,7 +22,7 @@ export default function NotFound() {
               Invalid Video URL
             </h1>
             <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
-              This video link does not exist or has an unsupported format. Video URLs must be accessed by their slug without file extensions (e.g. do not include <code className="px-1.5 py-0.5 rounded bg-slate-100 dark:bg-primary-950 font-mono text-xs text-primary-600 dark:text-primary-400">.mp4</code>).
+              This video link does not exist or has an unsupported format. If you were given a link to a video, please contact me (my socials are below).
             </p>
           </div>
 

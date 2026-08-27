@@ -43,10 +43,42 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const video = resolveVideo(id);
+  const summary = await fetchSummary(video.summaryUrl);
+
+  const cleanDescription = summary
+    ? summary
+        .replace(/^#+\s+/gm, '')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/\*([^*]+)\*/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+        .replace(/[`_~]/g, '')
+        .replace(/\s+/g, ' ')
+        .trim()
+    : '';
+
+  const description = cleanDescription || `Watch ${video.title} streamed in high definition.`;
 
   return {
     title: `${video.title} | Watch Hassan Dev`,
-    description: `Watch ${video.title} streamed in high definition.`,
+    description,
+    openGraph: {
+      title: `${video.title} | Watch Hassan Dev`,
+      description,
+      images: [
+        {
+          url: video.thumbnailUrl,
+          width: 1280,
+          height: 720,
+          alt: video.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${video.title} | Watch Hassan Dev`,
+      description,
+      images: [video.thumbnailUrl],
+    },
   };
 }
 
@@ -69,7 +101,13 @@ export default async function WatchPage({ params }: PageProps) {
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
         {/* Video Player Section */}
         <section aria-label="Video Player Stage" className="space-y-4">
-          <VideoPlayer src={video.videoUrl} title={video.title} chaptersUrl={video.vttUrl} />
+          <VideoPlayer
+            src={video.videoUrl}
+            title={video.title}
+            poster={video.thumbnailUrl}
+            chaptersUrl={video.vttUrl}
+            captionsUrl={video.captionsUrl}
+          />
 
           {/* Title & Channel Bar */}
           <div className="space-y-3 pt-1">
