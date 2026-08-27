@@ -6,7 +6,7 @@ import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { PageViewTracker } from '@/components/page-view-tracker';
 import { resolveVideo } from '@/lib/resolve-video';
-import { Keyboard, Calendar, ArrowUpRight } from 'lucide-react';
+import { Keyboard } from 'lucide-react';
 import type { Metadata } from 'next';
 
 interface PageProps {
@@ -116,7 +116,7 @@ export default async function WatchPage({ params }: PageProps) {
             </h1>
 
             {/* YouTube-style Channel Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-primary-950/80">
+            <div className="flex items-center justify-between gap-4 pb-2 border-b border-slate-200/80 dark:border-primary-950/80">
               {/* Channel Profile Info */}
               <div className="flex items-center gap-3">
                 <a
@@ -141,20 +141,6 @@ export default async function WatchPage({ params }: PageProps) {
                   className="font-bold text-base text-slate-900 dark:text-white hover:text-primary-600 dark:hover:text-primary-400 transition-colors inline-flex items-center gap-1.5"
                 >
                   <span>Hassan Aziz</span>
-                </a>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2.5 sm:gap-3 flex-wrap">
-                <a
-                  href="https://calendly.com/itshassanaziz/discuss-a-project"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 px-4.5 py-2.5 rounded-xl font-semibold text-xs sm:text-sm text-white bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 active:scale-[0.98] transition-all duration-200 shadow-md shadow-primary-500/25 hover:shadow-primary-500/40 hover:-translate-y-0.5 cursor-pointer shrink-0"
-                >
-                  <Calendar className="h-4 w-4" />
-                  <span>Book a Free Call</span>
-                  <ArrowUpRight className="h-4 w-4" />
                 </a>
               </div>
             </div>
