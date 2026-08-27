@@ -185,6 +185,11 @@ export default async function WatchPage({ params }: PageProps) {
             </div>
           </div>
         </section>
+
+        {/* Analytics Notice */}
+        <p className="text-center text-xs text-slate-400 dark:text-slate-500">
+          This page uses basic analytics
+        </p>
       </main>
 
       {/* Footer */}
