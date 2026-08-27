@@ -37,7 +37,7 @@ export function VideoSummary({ markdown }: VideoSummaryProps) {
         <div className="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-primary-950/60 bg-slate-50/50 dark:bg-primary-1000/20">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white">
-              Video Summary & Takeaways
+              Summary & Takeaways
             </h2>
             <div className="flex items-center gap-1.5 mt-1 text-xs text-slate-500 dark:text-primary-400">
               <Clock className="h-3.5 w-3.5" />
