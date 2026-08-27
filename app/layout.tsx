@@ -12,6 +12,16 @@ const inter = Inter({
 export const metadata: Metadata = {
   title: "WatchHassanDev | Private Video Hosting for Hassandev",
   description: "High-performance bespoke video hosting platform for Hassandev (hassandev.me) client deliverables, walkthroughs, and project demos.",
+  robots: {
+    index: false,
+    follow: false,
+    nocache: true,
+    googleBot: {
+      index: false,
+      follow: false,
+      noimageindex: true,
+    },
+  },
 };
 
 export default function RootLayout({
