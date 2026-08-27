@@ -9,7 +9,8 @@
     "lint": "eslint",
     "auth:sheets": "bun scripts/auth-sheets.ts",
     "chapters:generate": "bun scripts/generate_chapters.ts",
-    "summary:generate": "bun scripts/generate_summary.ts"
+    "summary:generate": "bun scripts/generate_summary.ts",
+    "storage:overview": "bun scripts/storage_overview.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10",
