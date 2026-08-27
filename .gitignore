@@ -44,3 +44,5 @@ next-env.d.ts
 tokens
 service-account*.json
 *.key.json
+# Sentry Config File
+.env.sentry-build-plugin
