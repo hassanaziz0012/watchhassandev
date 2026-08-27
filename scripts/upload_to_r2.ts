@@ -67,7 +67,7 @@ console.log('==========================================');
 const sh = (cmd: string, stdio: 'inherit' | 'ignore' = 'inherit') => execSync(cmd, { stdio });
 
 try {
-  sh(`ffmpeg -y -i "${inputFile}" -c:v libx264 -crf 18 -preset slow -c:a copy "${compressedFile}"`);
+  sh(`ffmpeg -y -i "${inputFile}" -c:v libx264 -crf 18 -preset slow -c:a copy -movflags +faststart "${compressedFile}"`);
 
   console.log('==========================================');
   console.log('✅ Compression complete!');
