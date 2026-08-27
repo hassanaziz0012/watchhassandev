@@ -11,6 +11,7 @@ interface VideoPlayerProps {
   autoplay?: boolean;
   pageUrl?: string;
   chaptersUrl?: string;
+  captionsUrl?: string;
 }
 
 const emptySubscribe = () => () => {};
@@ -41,7 +42,7 @@ function sendTrackingEvent(url: string, event: 'page_view' | 'video_play' | 'vid
   });
 }
 
-export function VideoPlayer({ src, title, poster, autoplay = false, pageUrl, chaptersUrl }: VideoPlayerProps) {
+export function VideoPlayer({ src, title, poster, autoplay = false, pageUrl, chaptersUrl, captionsUrl }: VideoPlayerProps) {
   const mounted = useMounted();
   const hasTrackedPlay = useRef(false);
   const hasTrackedCompletion = useRef(false);
@@ -86,6 +87,7 @@ export function VideoPlayer({ src, title, poster, autoplay = false, pageUrl, cha
       <MediaPlayer
         title={title}
         src={src}
+        poster={poster}
         autoPlay={autoplay}
         playsInline
         aspectRatio="16/9"
@@ -103,6 +105,15 @@ export function VideoPlayer({ src, title, poster, autoplay = false, pageUrl, cha
               src={poster}
               alt={title || 'Video poster'}
               className="w-full h-full object-cover"
+            />
+          )}
+          {captionsUrl && (
+            <track
+              src={captionsUrl}
+              kind="subtitles"
+              srcLang="en"
+              label="English"
+              default
             />
           )}
           {chaptersUrl && (
