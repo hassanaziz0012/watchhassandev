@@ -5,15 +5,50 @@ import os from 'os';
 import crypto from 'crypto';
 import { execSync } from 'child_process';
 
-const [inputFile, destArg] = process.argv.slice(2);
+const args = process.argv.slice(2);
+let inputFile: string | undefined;
+let destArg: string | undefined;
+let customThumbArg: string | undefined;
+
+const positionalArgs: string[] = [];
+
+for (let i = 0; i < args.length; i++) {
+  const arg = args[i];
+  if (arg === '--thumb') {
+    i++;
+    if (i >= args.length) {
+      console.error('Error: --thumb requires a file path argument.');
+      process.exit(1);
+    }
+    customThumbArg = args[i];
+  } else if (arg.startsWith('--thumb=')) {
+    customThumbArg = arg.slice('--thumb='.length);
+  } else if (arg === '-h' || arg === '--help') {
+    console.log('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>]');
+    process.exit(0);
+  } else if (arg.startsWith('-')) {
+    console.error(`Error: Unknown option '${arg}'.`);
+    process.exit(1);
+  } else {
+    positionalArgs.push(arg);
+  }
+}
+
+inputFile = positionalArgs[0];
+destArg = positionalArgs[1];
 
 if (!inputFile) {
-  console.error('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename]');
+  console.error('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>]');
   process.exit(1);
 }
 
 if (!fs.existsSync(inputFile)) {
   console.error(`Error: Input file '${inputFile}' does not exist.`);
+  process.exit(1);
+}
+
+if (customThumbArg && !fs.existsSync(customThumbArg)) {
+  console.error(`Error: Custom thumbnail file '${customThumbArg}' does not exist.`);
   process.exit(1);
 }
 
@@ -54,6 +89,9 @@ const summaryFile = path.join(tmpDir, 'summary.md');
 
 console.log('==========================================');
 console.log(`🎬 Input video:     ${inputFile}`);
+if (customThumbArg) {
+  console.log(`🖼️  Custom thumb:   ${customThumbArg}`);
+}
 console.log(`🆔 Assigned UUID:   ${uuid}`);
 console.log(`📁 R2 Folder:       ${folderName}`);
 console.log('📹 Video:           video.mp4');
@@ -71,17 +109,29 @@ try {
 
   console.log('==========================================');
   console.log('✅ Compression complete!');
-  console.log('🖼️  Step 2: Extracting poster thumbnail with FFmpeg...');
-  console.log('==========================================');
+  if (customThumbArg) {
+    console.log('🖼️  Step 2: Preparing custom poster thumbnail...');
+    console.log('==========================================');
+    try {
+      sh(`ffmpeg -y -i "${customThumbArg}" "${thumbnailFile}"`, 'ignore');
+    } catch {
+      fs.copyFileSync(customThumbArg, thumbnailFile);
+    }
+    console.log('==========================================');
+    console.log('✅ Custom thumbnail prepared!');
+  } else {
+    console.log('🖼️  Step 2: Extracting poster thumbnail with FFmpeg...');
+    console.log('==========================================');
 
-  try {
-    sh(`ffmpeg -y -ss 00:00:01 -i "${inputFile}" -vframes 1 -q:v 2 "${thumbnailFile}"`, 'ignore');
-  } catch {
-    sh(`ffmpeg -y -ss 00:00:00 -i "${inputFile}" -vframes 1 -q:v 2 "${thumbnailFile}"`, 'ignore');
+    try {
+      sh(`ffmpeg -y -ss 00:00:01 -i "${inputFile}" -vframes 1 -q:v 2 "${thumbnailFile}"`, 'ignore');
+    } catch {
+      sh(`ffmpeg -y -ss 00:00:00 -i "${inputFile}" -vframes 1 -q:v 2 "${thumbnailFile}"`, 'ignore');
+    }
+
+    console.log('==========================================');
+    console.log('✅ Thumbnail extraction complete!');
   }
-
-  console.log('==========================================');
-  console.log('✅ Thumbnail extraction complete!');
   console.log('🎙️  Step 3: Transcribing captions with Groq Cloud Whisper...');
   console.log('==========================================');
 
@@ -93,13 +143,13 @@ try {
   console.log('🤖 Step 4: Generating chapters with Claude...');
   console.log('==========================================');
 
-  sh(`bun scripts/generate_chapters.ts "${srtFile}" "${chaptersFile}"`);
+  sh(`bun scripts/generate_chapters.ts "${srtFile}" "${chaptersFile}" "${baseName}"`);
 
   console.log('==========================================');
   console.log('📝 Step 5: Generating summary with Claude...');
   console.log('==========================================');
 
-  sh(`bun scripts/generate_summary.ts "${srtFile}" "${summaryFile}"`);
+  sh(`bun scripts/generate_summary.ts "${srtFile}" "${summaryFile}" "${baseName}"`);
 
   console.log('==========================================');
   console.log(`☁️  Step 6: Uploading assets to Cloudflare R2 folder: ${folderName}/ ...`);
