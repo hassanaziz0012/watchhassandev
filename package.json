@@ -11,7 +11,8 @@
     "chapters:generate": "bun scripts/generate_chapters.ts",
     "summary:generate": "bun scripts/generate_summary.ts",
     "storage:overview": "bun scripts/storage_overview.ts",
-    "upload:r2": "bun scripts/upload_to_r2.ts"
+    "upload:r2": "bun scripts/upload_to_r2.ts",
+    "videos:list": "bun scripts/list_files.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10",
