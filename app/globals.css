@@ -97,6 +97,29 @@ media-captions [part='cue'],
   white-space: pre-wrap;
 }
 
+/* Token streaming opacity animation */
+@keyframes token-word-fade {
+  0% {
+    opacity: 0;
+    filter: blur(3px);
+    transform: translateY(1.5px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+}
+
+.token-word {
+  display: inline-block;
+  opacity: 0;
+  animation: token-word-fade 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  will-change: opacity, filter, transform;
+}
+
+
+
 
 
 
