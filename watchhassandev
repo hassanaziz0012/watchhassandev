@@ -59,8 +59,9 @@ Command Details:
     - Generates chapters & summary with Claude via browserllm
     - Uploads all assets to Cloudflare R2 via rclone
 
-  watchhassandev uploadphantom <path-to-video> [path-to-captions.srt] [destination-slug] [options]
-    - Uses existing Phantom artifacts (SRT captions, metadata.json, thumbnail)
+  watchhassandev uploadphantom <path-to-video> [destination-slug] [options]
+    - Uses pre-generated Phantom metadata (metadata.json, thumbnail)
+    - Transcribes captions with Groq Cloud Whisper via Phantom (--max-words 10)
     - Compresses video and formats WebVTT chapters from metadata
     - Uploads all assets to Cloudflare R2 via rclone
     - Options:
@@ -72,7 +73,7 @@ Examples:
   watchhassandev upload ./demo.mp4
   watchhassandev upload ./demo.mp4 custom-name --thumb ./thumb.png
   watchhassandev uploadphantom ./video/final.mp4
-  watchhassandev uploadphantom ./video/final.mp4 ./video/trimmed.srt "my-slug"
+  watchhassandev uploadphantom ./video/final.mp4 "my-slug"
   watchhassandev uploadphantom ./video/final.mp4 --dry-run
 EOF
 }
