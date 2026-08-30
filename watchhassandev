@@ -1,0 +1,113 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+# ==============================================================================
+# watchhassandev CLI
+# CLI wrapper for watch.hassandev.me video processing and Cloudflare R2 uploads
+# ==============================================================================
+
+# Determine project directory
+DEFAULT_PROJECT_DIR="/home/hassan/Desktop/programming/watchhassandev"
+PROJECT_DIR="${WATCHHASSANDEV_DIR:-}"
+
+if [ -z "$PROJECT_DIR" ]; then
+    CURRENT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [ -f "$CURRENT_DIR/scripts/upload_to_r2.ts" ]; then
+        PROJECT_DIR="$CURRENT_DIR"
+    elif [ -f "$DEFAULT_PROJECT_DIR/scripts/upload_to_r2.ts" ]; then
+        PROJECT_DIR="$DEFAULT_PROJECT_DIR"
+    fi
+fi
+
+if [ -z "$PROJECT_DIR" ] || [ ! -d "$PROJECT_DIR" ]; then
+    echo "❌ Error: Could not locate watchhassandev project directory." >&2
+    echo "Please set WATCHHASSANDEV_DIR or reinstall using install.sh" >&2
+    exit 1
+fi
+
+# Ensure bun runtime is available
+if ! command -v bun >/dev/null 2>&1; then
+    echo "❌ Error: 'bun' runtime is required but was not found in your PATH." >&2
+    echo "Please install bun via: curl -fsSL https://bun.sh/install | bash" >&2
+    exit 1
+fi
+
+# Load .env from project directory if available
+ENV_ARGS=()
+if [ -f "$PROJECT_DIR/.env" ]; then
+    ENV_ARGS=("--env-file=$PROJECT_DIR/.env")
+fi
+
+show_help() {
+    cat << 'EOF'
+watchhassandev - CLI tool for watch.hassandev.me video uploads & pipelines
+
+Usage:
+  watchhassandev <command> [arguments...]
+  watchhassandev --help | -h
+  watchhassandev --version | -v
+
+Commands:
+  upload          Upload video and auto-generate assets to Cloudflare R2
+  uploadphantom   Upload video with pre-generated Phantom assets / metadata
+
+Command Details:
+  watchhassandev upload <path-to-video> [destination-filename] [--thumb <path>]
+    - Compresses video with FFmpeg (+faststart)
+    - Generates thumbnail (or uses custom poster)
+    - Transcribes captions with Groq Cloud Whisper
+    - Generates chapters & summary with Claude via browserllm
+    - Uploads all assets to Cloudflare R2 via rclone
+
+  watchhassandev uploadphantom <path-to-video> [path-to-captions.srt] [destination-slug] [options]
+    - Uses existing Phantom artifacts (SRT captions, metadata.json, thumbnail)
+    - Compresses video and formats WebVTT chapters from metadata
+    - Uploads all assets to Cloudflare R2 via rclone
+    - Options:
+        --thumb <path>      Path to custom thumbnail (auto-detects thumbnail.png/jpg)
+        --metadata <path>   Path to metadata.json (default: in video directory)
+        --dry-run           Process assets without uploading to Cloudflare R2
+
+Examples:
+  watchhassandev upload ./demo.mp4
+  watchhassandev upload ./demo.mp4 custom-name --thumb ./thumb.png
+  watchhassandev uploadphantom ./video/final.mp4
+  watchhassandev uploadphantom ./video/final.mp4 ./video/trimmed.srt "my-slug"
+  watchhassandev uploadphantom ./video/final.mp4 --dry-run
+EOF
+}
+
+show_version() {
+    echo "watchhassandev v0.1.0"
+}
+
+if [ $# -eq 0 ]; then
+    show_help
+    exit 0
+fi
+
+COMMAND="$1"
+shift
+
+case "$COMMAND" in
+    upload)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/upload_to_r2.ts" "$@"
+        ;;
+    uploadphantom|upload-phantom)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/upload_via_phantom.ts" "$@"
+        ;;
+    -h|--help|help)
+        show_help
+        exit 0
+        ;;
+    -v|--version|version)
+        show_version
+        exit 0
+        ;;
+    *)
+        echo "❌ Error: Unknown command '$COMMAND'" >&2
+        echo "" >&2
+        show_help >&2
+        exit 1
+        ;;
+esac
