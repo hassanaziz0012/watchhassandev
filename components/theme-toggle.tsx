@@ -1,7 +1,8 @@
 'use client';
 
-import { useSyncExternalStore, useState } from 'react';
-import { Sun, Moon } from 'lucide-react';
+import { useSyncExternalStore } from 'react';
+import { Sun, Moon, Laptop } from 'lucide-react';
+import { useTheme } from '@/components/theme-provider';
 
 const emptySubscribe = () => () => {};
 
@@ -14,25 +15,16 @@ function useMounted() {
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof document !== 'undefined') {
-      return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-    }
-    return 'dark';
-  });
+  const { theme, resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
 
-  const toggleTheme = () => {
-    const nextTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(nextTheme);
-    if (nextTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-      document.documentElement.classList.remove('light');
-      localStorage.setItem('theme', 'dark');
+  const cycleTheme = () => {
+    if (theme === 'system') {
+      setTheme('dark');
+    } else if (theme === 'dark') {
+      setTheme('light');
     } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.classList.add('light');
-      localStorage.setItem('theme', 'light');
+      setTheme('system');
     }
   };
 
@@ -42,17 +34,30 @@ export function ThemeToggle() {
     );
   }
 
+  const getLabel = () => {
+    if (theme === 'system') {
+      return `Theme: System auto (${resolvedTheme}) – Click for dark`;
+    }
+    if (theme === 'dark') {
+      return 'Theme: Dark – Click for light';
+    }
+    return 'Theme: Light – Click for system auto';
+  };
+
   return (
     <button
-      onClick={toggleTheme}
+      onClick={cycleTheme}
       type="button"
-      aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}
-      className="h-9 w-9 rounded-xl flex items-center justify-center transition-colors duration-200 border border-slate-200 dark:border-primary-900/60 bg-slate-100/80 dark:bg-primary-950/80 hover:bg-slate-200 dark:hover:bg-primary-900 shadow-xs cursor-pointer group"
+      aria-label={getLabel()}
+      title={getLabel()}
+      className="h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-200 border border-slate-200 dark:border-primary-900/60 bg-slate-100/80 dark:bg-primary-950/80 hover:bg-slate-200 dark:hover:bg-primary-900 shadow-xs cursor-pointer group active:scale-95 relative"
     >
-      {theme === 'dark' ? (
-        <Sun className="h-4 w-4 text-slate-300 group-hover:text-white transition-all duration-300 group-hover:rotate-45" />
+      {theme === 'system' ? (
+        <Laptop className="h-4 w-4 text-slate-600 dark:text-primary-300 group-hover:text-primary-600 dark:group-hover:text-white transition-all duration-300 group-hover:scale-110" />
+      ) : theme === 'dark' ? (
+        <Moon className="h-4 w-4 text-primary-300 group-hover:text-white transition-all duration-300 group-hover:-rotate-12" />
       ) : (
-        <Moon className="h-4 w-4 text-slate-700 group-hover:text-slate-900 transition-all duration-300 group-hover:-rotate-12" />
+        <Sun className="h-4 w-4 text-amber-500 group-hover:text-amber-600 transition-all duration-300 group-hover:rotate-45" />
       )}
     </button>
   );
