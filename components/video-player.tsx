@@ -113,7 +113,6 @@ export function VideoPlayer({ src, title, poster, autoplay = false, pageUrl, cha
               kind="subtitles"
               srcLang="en"
               label="English"
-              default
             />
           )}
           {chaptersUrl && (
