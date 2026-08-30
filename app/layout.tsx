@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CursorGlow } from "@/components/cursor-glow";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -42,13 +43,17 @@ export default function RootLayout({
               (function() {
                 try {
                   var stored = localStorage.getItem('theme');
-                  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                  if (stored === 'dark' || (!stored && prefersDark)) {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.classList.remove('light');
+                  var media = window.matchMedia('(prefers-color-scheme: dark)');
+                  var isDark = stored === 'dark' || ((!stored || stored === 'system') && media.matches);
+                  var root = document.documentElement;
+                  if (isDark) {
+                    root.classList.add('dark');
+                    root.classList.remove('light');
+                    root.style.colorScheme = 'dark';
                   } else {
-                    document.documentElement.classList.remove('dark');
-                    document.documentElement.classList.add('light');
+                    root.classList.remove('dark');
+                    root.classList.add('light');
+                    root.style.colorScheme = 'light';
                   }
                 } catch (e) {}
               })();
@@ -57,8 +62,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col bg-background text-foreground transition-colors duration-200 relative">
-        <CursorGlow />
-        {children}
+        <ThemeProvider>
+          <CursorGlow />
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
