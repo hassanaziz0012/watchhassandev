@@ -198,23 +198,21 @@ for (let i = 0; i < args.length; i++) {
   } else if (arg === '-h' || arg === '--help') {
     console.log(`
 Usage:
-  bun scripts/upload_via_phantom.ts <path-to-video> [path-to-captions.srt] [destination-slug] [options]
+  bun scripts/upload_via_phantom.ts <path-to-video> [destination-slug] [options]
 
 Arguments:
-  <path-to-video>         Path to input video file (e.g. final.mp4)
-  [path-to-captions.srt]  Path to SRT captions file. Defaults to 'trimmed.srt' in the video folder.
-  [destination-slug]      Optional custom destination slug (defaults to slugified title from metadata.json)
+  <path-to-video>     Path to input video file (e.g. final.mp4)
+  [destination-slug]  Optional custom destination slug (defaults to slugified title from metadata.json)
 
 Options:
-  --thumb <path>          Path to custom poster image / thumbnail (auto-detects 'thumbnail.png' in video folder if present)
-  --metadata <path>       Path to metadata.json (default: metadata.json in video directory)
-  --dry-run               Process and generate all assets without uploading to Cloudflare R2
-  -h, --help              Show this help message
+  --thumb <path>      Path to custom poster image / thumbnail (auto-detects 'thumbnail.png' in video folder if present)
+  --metadata <path>   Path to metadata.json (default: metadata.json in video directory)
+  --dry-run           Process and generate all assets without uploading to Cloudflare R2
+  -h, --help          Show this help message
 
 Examples:
-  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" "/path/to/video/trimmed.srt"
   bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4"
-  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" "/path/to/video/trimmed.srt" "my-custom-slug" --thumb "/path/to/thumb.png"
+  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" "my-custom-slug" --thumb "/path/to/thumb.png"
 `);
     process.exit(0);
   } else if (arg.startsWith('-')) {
@@ -226,12 +224,11 @@ Examples:
 }
 
 const inputVideo = positionalArgs[0];
-const inputSrt = positionalArgs[1];
-const destArg = positionalArgs[2];
+const destArg = positionalArgs[1];
 
 if (!inputVideo) {
   console.error('❌ Error: Input video file is required.');
-  console.error('Usage: bun scripts/upload_via_phantom.ts <path-to-video> [path-to-captions.srt] [destination-slug] [options]');
+  console.error('Usage: bun scripts/upload_via_phantom.ts <path-to-video> [destination-slug] [options]');
   console.error('Run with --help for full usage information.');
   process.exit(1);
 }
@@ -243,22 +240,6 @@ if (!fs.existsSync(resolvedVideoPath)) {
 }
 
 const videoDir = path.dirname(resolvedVideoPath);
-
-// Captions file resolution:
-// If unspecified, use trimmed.srt in the video directory. If not present, throw an error.
-const captionsFileToUse = inputSrt ? path.resolve(inputSrt) : path.join(videoDir, 'trimmed.srt');
-
-if (!fs.existsSync(captionsFileToUse)) {
-  if (!inputSrt) {
-    console.error(`❌ Error: Captions file not specified and 'trimmed.srt' was not found in '${videoDir}'.`);
-    console.error(`Please provide the path to your captions (.srt) file as the second argument.`);
-  } else {
-    console.error(`❌ Error: Captions file '${inputSrt}' does not exist.`);
-  }
-  process.exit(1);
-}
-
-const resolvedSrtPath = captionsFileToUse;
 
 // Locate metadata.json
 const metadataPath = customMetadataArg ? path.resolve(customMetadataArg) : path.join(videoDir, 'metadata.json');
@@ -354,6 +335,7 @@ const timestamps = metadata.timestamps || metadata.chapters || [];
 const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'r2-phantom-upload-'));
 const compressedFile = path.join(tmpDir, 'video.mp4');
 const thumbnailFile = path.join(tmpDir, 'thumbnail.png');
+const srtFile = path.join(tmpDir, 'captions.srt');
 const captionsFile = path.join(tmpDir, 'captions.vtt');
 const chaptersFile = path.join(tmpDir, 'chapters.vtt');
 const summaryFile = path.join(tmpDir, 'summary.md');
@@ -362,7 +344,6 @@ console.log('==========================================');
 console.log('🚀 Phantom Video Upload Pipeline');
 console.log('==========================================');
 console.log(`🎬 Input Video:     ${resolvedVideoPath}`);
-console.log(`💬 Input Captions:  ${resolvedSrtPath}`);
 console.log(`📋 Metadata Source: ${metadataPath}`);
 console.log(`🏷️  Video Title:     ${title}`);
 if (effectiveThumb) {
@@ -403,11 +384,12 @@ try {
   }
   console.log('✅ Poster thumbnail prepared!');
 
-  // Step 3: Convert SRT captions to WebVTT
+  // Step 3: Transcribe captions with Phantom (max-words 10) & convert to WebVTT
   console.log('==========================================');
-  console.log('💬 Step 3: Converting SRT captions to WebVTT (captions.vtt)...');
-  sh(`ffmpeg -y -i "${resolvedSrtPath}" "${captionsFile}"`, 'ignore');
-  console.log('✅ Captions conversion complete!');
+  console.log('🎙️  Step 3: Transcribing captions with phantom edit transcribe-cloud (--max-words 10)...');
+  sh(`phantom edit transcribe-cloud "${resolvedVideoPath}" --max-words 10 --output "${srtFile}"`);
+  sh(`ffmpeg -y -i "${srtFile}" "${captionsFile}"`, 'ignore');
+  console.log('✅ Captions transcription & WebVTT conversion complete!');
 
   // Step 4: Generate WebVTT chapters from metadata
   console.log('==========================================');
