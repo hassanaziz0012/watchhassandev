@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Palette, Check, Copy } from 'lucide-react';
+import { Palette, Check } from 'lucide-react';
 
 const shades = [
   { name: 'primary-50', shade: '50', hsl: 'hsl(207, 95%, 98%)', hex: '#f0f8ff', bgClass: 'bg-primary-50', textDark: true },
