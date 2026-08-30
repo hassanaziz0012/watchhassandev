@@ -33,7 +33,7 @@ export default function Home() {
             </h1>
 
             <p className="text-base sm:text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto leading-relaxed">
-              I built this platform to deliver client walkthroughs, project milestones, and technical demos. It's my own custom self-hosted alternative to Loom.
+              I built this platform to deliver client walkthroughs, project milestones, and technical demos. It&apos;s my own custom self-hosted alternative to Loom.
             </p>
           </div>
 
