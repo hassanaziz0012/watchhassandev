@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-import { Copy, Check, Download, ExternalLink, Code2, Sparkles, Share2 } from 'lucide-react';
+import { Copy, Check, Download, ExternalLink, Code2, Share2 } from 'lucide-react';
 
 interface VideoActionsProps {
-  videoId: string;
+  videoId?: string;
   videoUrl: string;
 }
 
-export function VideoActions({ videoId, videoUrl }: VideoActionsProps) {
+export function VideoActions({ videoUrl }: VideoActionsProps) {
   const [copiedLink, setCopiedLink] = useState(false);
   const [copiedEmbed, setCopiedEmbed] = useState(false);
   const [showEmbed, setShowEmbed] = useState(false);
