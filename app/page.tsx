@@ -1,6 +1,7 @@
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
 import { ResumeShowcase } from "@/components/resume-showcase";
+import { LiveBuildSection } from "@/components/live-build-section";
 import {
   ArrowUpRight,
   Calendar,
@@ -80,6 +81,15 @@ export default function Home() {
           className="w-full border-t border-slate-200/80 dark:border-primary-950/80 transition-colors"
         >
           <ResumeShowcase />
+        </section>
+
+        {/* Live Build Section */}
+        <section
+          id="live-build"
+          aria-label="Watch me build this live"
+          className="w-full border-t border-slate-200/80 dark:border-primary-950/80 transition-colors"
+        >
+          <LiveBuildSection />
         </section>
       </main>
 
