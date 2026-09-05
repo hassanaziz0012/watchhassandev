@@ -4,6 +4,30 @@ import path from 'path';
 import os from 'os';
 import crypto from 'crypto';
 import { execSync } from 'child_process';
+import readline from 'readline';
+
+/**
+ * Asks a question via readline interface and returns the trimmed response
+ */
+function askQuestion(query: string): Promise<string> {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise((resolve) => {
+    rl.on('SIGINT', () => {
+      rl.close();
+      console.log('\nUpload aborted.');
+      process.exit(130);
+    });
+
+    rl.question(query, (answer) => {
+      rl.close();
+      resolve(answer.trim());
+    });
+  });
+}
 
 interface RawTimestampEntry {
   timestamp?: string;
@@ -18,7 +42,6 @@ interface PhantomMetadata {
   description?: string;
   summary?: string;
   timestamps?: RawTimestampEntry[];
-  chapters?: RawTimestampEntry[];
   tags?: string[];
   categoryId?: string;
   privacyStatus?: string;
@@ -329,16 +352,20 @@ const destFolder = `${remote}:${bucket}/${folderName}`;
 
 const title = metadata.title || baseSlug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 const summaryText = (metadata.description || metadata.summary || '').trim();
-const timestamps = metadata.timestamps || metadata.chapters || [];
 
-// Create temporary directory for staging assets
-const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'r2-phantom-upload-'));
-const compressedFile = path.join(tmpDir, 'video.mp4');
-const thumbnailFile = path.join(tmpDir, 'thumbnail.png');
-const srtFile = path.join(tmpDir, 'captions.srt');
-const captionsFile = path.join(tmpDir, 'captions.vtt');
-const chaptersFile = path.join(tmpDir, 'chapters.vtt');
-const summaryFile = path.join(tmpDir, 'summary.md');
+const rawTimestamps: RawTimestampEntry[] =
+  Array.isArray(metadata.timestamps) && metadata.timestamps.length > 0
+    ? metadata.timestamps
+    : [];
+
+const hasTimestamps =
+  rawTimestamps.length > 0 &&
+  rawTimestamps.some(
+    (item) =>
+      typeof item === 'object' &&
+      item !== null &&
+      Boolean((item.timestamp && String(item.timestamp).trim()) || (item.startTime && String(item.startTime).trim()))
+  );
 
 console.log('==========================================');
 console.log('🚀 Phantom Video Upload Pipeline');
@@ -355,6 +382,33 @@ if (dryRun) {
   console.log(`⚠️  Mode:            DRY RUN (No cloud upload)`);
 }
 console.log('==========================================');
+
+if (!hasTimestamps) {
+  console.warn('\n⚠️  WARNING: Timestamps are missing from the metadata file!');
+  console.warn(`   Metadata file: ${metadataPath}`);
+  console.warn('   Timestamps provide chapter markers and are recommended for videos.\n');
+
+  const answer = await askQuestion('Do you want to proceed without timestamps? (y/N): ');
+  const shouldProceed = answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes';
+
+  if (!shouldProceed) {
+    console.log('Upload aborted.');
+    process.exit(0);
+  }
+
+  console.log('Proceeding without timestamps...\n');
+}
+
+const timestamps = hasTimestamps ? rawTimestamps : [];
+
+// Create temporary directory for staging assets
+const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'r2-phantom-upload-'));
+const compressedFile = path.join(tmpDir, 'video.mp4');
+const thumbnailFile = path.join(tmpDir, 'thumbnail.png');
+const srtFile = path.join(tmpDir, 'captions.srt');
+const captionsFile = path.join(tmpDir, 'captions.vtt');
+const chaptersFile = path.join(tmpDir, 'chapters.vtt');
+const summaryFile = path.join(tmpDir, 'summary.md');
 
 const sh = (cmd: string, stdio: 'inherit' | 'ignore' = 'inherit') => execSync(cmd, { stdio });
 
