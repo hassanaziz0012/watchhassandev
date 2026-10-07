@@ -5,7 +5,7 @@ import { VideoSummary } from '@/components/video-summary';
 import { Navbar } from '@/components/navbar';
 import { Footer } from '@/components/footer';
 import { PageViewTracker } from '@/components/page-view-tracker';
-import { resolveVideo } from '@/lib/resolve-video';
+import { resolveVideo, videoAssetsExist } from '@/lib/resolve-video';
 import { Keyboard } from 'lucide-react';
 import type { Metadata } from 'next';
 
@@ -54,10 +54,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const video = resolveVideo(id);
-  const [summary, customTitle] = await Promise.all([
+  const [exists, summary, customTitle] = await Promise.all([
+    videoAssetsExist(video),
     fetchSummary(video.summaryUrl),
     fetchTitle(video.titleUrl),
   ]);
+  if (!exists) {
+    notFound();
+  }
   const title = customTitle ?? video.title;
 
   const cleanDescription = summary
@@ -104,10 +108,14 @@ export default async function WatchPage({ params }: PageProps) {
   }
 
   const video = resolveVideo(id);
-  const [summary, customTitle] = await Promise.all([
+  const [exists, summary, customTitle] = await Promise.all([
+    videoAssetsExist(video),
     fetchSummary(video.summaryUrl),
     fetchTitle(video.titleUrl),
   ]);
+  if (!exists) {
+    notFound();
+  }
   const title = customTitle ?? video.title;
 
   return (
