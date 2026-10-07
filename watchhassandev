@@ -52,6 +52,7 @@ Commands:
   uploadphantom   Upload video with pre-generated Phantom assets / metadata
   listfiles       List video files in Cloudflare R2 bucket
   storage         Show Cloudflare R2 bucket storage overview and usage
+  stats           Display video stats from Google Sheet
 
 Command Details:
   watchhassandev upload <path-to-video> [destination-filename] [--thumb <path>]
@@ -133,6 +134,9 @@ case "$COMMAND" in
         ;;
     storage|storage-overview)
         exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/storage_overview.ts" "$@"
+        ;;
+    stats|get-stats|getstats)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/get_stats.ts" "$@"
         ;;
     -h|--help|help)
         show_help
