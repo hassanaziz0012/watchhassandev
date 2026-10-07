@@ -53,6 +53,7 @@ Commands:
   listfiles       List video files in Cloudflare R2 bucket
   storage         Show Cloudflare R2 bucket storage overview and usage
   stats           Display video stats from Google Sheet
+  delete          Delete all R2 files for a video by its UUID
 
 Command Details:
   watchhassandev upload <path-to-video> [destination-filename] [--thumb <path>]
@@ -95,6 +96,16 @@ Command Details:
         --json               Output overview as JSON
         --no-color           Disable ANSI color formatting
 
+  watchhassandev delete <uuid> [options]
+    - Lists all R2 files whose path contains the given UUID
+    - Prompts for confirmation before permanently deleting them
+    - Options:
+        -b, --bucket <name>  Cloudflare R2 bucket name
+        -r, --remote <name>  rclone remote name
+        --dry-run            Show files that would be deleted without deleting
+        -y, --yes            Skip confirmation prompt
+        --no-color           Disable ANSI color formatting
+
 Examples:
   watchhassandev upload ./demo.mp4
   watchhassandev upload ./demo.mp4 custom-name --thumb ./thumb.png
@@ -107,6 +118,9 @@ Examples:
   watchhassandev storage
   watchhassandev storage 10
   watchhassandev storage --all
+  watchhassandev delete a1b2c3d4-e5f6-7890-abcd-ef1234567890
+  watchhassandev delete a1b2c3d4-e5f6-7890-abcd-ef1234567890 --dry-run
+  watchhassandev delete a1b2c3d4-e5f6-7890-abcd-ef1234567890 -y
 EOF
 }
 
@@ -137,6 +151,9 @@ case "$COMMAND" in
         ;;
     stats|get-stats|getstats)
         exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/get_stats.ts" "$@"
+        ;;
+    delete|delete-video)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/delete_video.ts" "$@"
         ;;
     -h|--help|help)
         show_help

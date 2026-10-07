@@ -16,6 +16,7 @@
     "upload:phantom": "bun scripts/upload_via_phantom.ts",
     "backup:local": "bun scripts/backup_local.ts",
     "videos:list": "bun scripts/list_files.ts",
+    "video:delete": "bun scripts/delete_video.ts",
     "backup:yt": "bun scripts/backup_yt.ts"
   },
   "dependencies": {
