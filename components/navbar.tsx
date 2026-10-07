@@ -1,16 +1,21 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Play, Globe, ArrowUpRight, Calendar } from "lucide-react";
+import { Globe, ArrowUpRight, Calendar } from "lucide-react";
 
 export function Navbar() {
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200/60 dark:border-primary-950/60 bg-white/60 dark:bg-[#06090e]/60 backdrop-blur-xl backdrop-saturate-150 shadow-xs dark:shadow-none transition-colors duration-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-3 group cursor-pointer">
-          <div className="h-9 w-9 rounded-xl bg-gradient-to-tr from-primary-600 via-primary-500 to-primary-400 flex items-center justify-center shadow-md shadow-primary-500/20 group-hover:scale-105 transition-transform">
-            <Play className="h-4 w-4 text-white fill-white ml-0.5" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="WatchHassanDev Logo"
+            width={36}
+            height={36}
+            className="rounded-xl group-hover:scale-105 transition-transform"
+          />
           <div className="flex items-center gap-2">
             <span className="font-bold tracking-tight text-lg text-slate-900 dark:text-white">
               Watch<span className="text-primary-600 dark:text-primary-400">Hassan</span>Dev
