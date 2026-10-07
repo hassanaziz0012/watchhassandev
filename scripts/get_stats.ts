@@ -5,7 +5,8 @@ import path from 'path';
 
 // Read .env / .env.local from project directory so project variables take precedence over shell environment
 function loadEnv(): Record<string, string> {
-  const projectDir = process.env.WATCHHASSANDEV_DIR || path.resolve(import.meta.dir, '..');
+  const currentDir = (import.meta as { dir?: string }).dir || __dirname;
+  const projectDir = process.env.WATCHHASSANDEV_DIR || path.resolve(currentDir, '..');
   const env: Record<string, string> = {};
   for (const file of ['.env', '.env.local']) {
     const filePath = path.join(projectDir, file);
