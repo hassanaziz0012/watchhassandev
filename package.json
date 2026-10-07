@@ -8,12 +8,15 @@
     "start": "next start",
     "lint": "eslint",
     "auth:sheets": "bun scripts/auth-sheets.ts",
+    "stats": "bun scripts/get_stats.ts",
     "chapters:generate": "bun scripts/generate_chapters.ts",
     "summary:generate": "bun scripts/generate_summary.ts",
     "storage:overview": "bun scripts/storage_overview.ts",
     "upload:r2": "bun scripts/upload_to_r2.ts",
     "upload:phantom": "bun scripts/upload_via_phantom.ts",
-    "videos:list": "bun scripts/list_files.ts"
+    "backup:local": "bun scripts/backup_local.ts",
+    "videos:list": "bun scripts/list_files.ts",
+    "backup:yt": "bun scripts/backup_yt.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^10",
