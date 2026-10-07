@@ -9,6 +9,7 @@ const args = process.argv.slice(2);
 let inputFile: string | undefined;
 let destArg: string | undefined;
 let customThumbArg: string | undefined;
+let customTitleArg: string | undefined;
 
 const positionalArgs: string[] = [];
 
@@ -23,8 +24,17 @@ for (let i = 0; i < args.length; i++) {
     customThumbArg = args[i];
   } else if (arg.startsWith('--thumb=')) {
     customThumbArg = arg.slice('--thumb='.length);
+  } else if (arg === '--title') {
+    i++;
+    if (i >= args.length) {
+      console.error('Error: --title requires a string argument.');
+      process.exit(1);
+    }
+    customTitleArg = args[i];
+  } else if (arg.startsWith('--title=')) {
+    customTitleArg = arg.slice('--title='.length);
   } else if (arg === '-h' || arg === '--help') {
-    console.log('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>]');
+    console.log('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>] [--title "Custom Title"]');
     process.exit(0);
   } else if (arg.startsWith('-')) {
     console.error(`Error: Unknown option '${arg}'.`);
@@ -38,7 +48,7 @@ inputFile = positionalArgs[0];
 destArg = positionalArgs[1];
 
 if (!inputFile) {
-  console.error('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>]');
+  console.error('Usage: bun scripts/upload_to_r2.ts <path-to-video-file> [destination-filename] [--thumb <path-to-image>] [--title "Custom Title"]');
   process.exit(1);
 }
 
@@ -88,11 +98,15 @@ const srtFile = path.join(tmpDir, 'captions.srt');
 const captionsFile = path.join(tmpDir, 'captions.vtt');
 const chaptersFile = path.join(tmpDir, 'chapters.vtt');
 const summaryFile = path.join(tmpDir, 'summary.md');
+const titleFile = path.join(tmpDir, 'title.txt');
 
 console.log('==========================================');
 console.log(`🎬 Input video:     ${resolvedInputFile}`);
 if (resolvedThumbFile) {
   console.log(`🖼️  Custom thumb:   ${resolvedThumbFile}`);
+}
+if (customTitleArg) {
+  console.log(`🏷️  Custom title:   ${customTitleArg}`);
 }
 console.log(`🆔 Assigned UUID:   ${uuid}`);
 console.log(`📁 R2 Folder:       ${folderName}`);
@@ -155,17 +169,26 @@ try {
   const generateSummaryScript = path.join(__dirname, 'generate_summary.ts');
   sh(`bun "${generateSummaryScript}" "${srtFile}" "${summaryFile}" "${baseName}"`);
 
+  // Write title.txt if a custom title was provided via --title
+  if (customTitleArg && customTitleArg.trim()) {
+    fs.writeFileSync(titleFile, customTitleArg.trim(), 'utf8');
+  }
+
   console.log('==========================================');
   console.log(`☁️  Step 6: Uploading assets to Cloudflare R2 folder: ${folderName}/ ...`);
   console.log('==========================================');
 
-  const files = [
+  const files: [string, string, string][] = [
     ['video (video.mp4)', compressedFile, 'video.mp4'],
     ['thumbnail (thumbnail.png)', thumbnailFile, 'thumbnail.png'],
     ['chapters (chapters.vtt)', chaptersFile, 'chapters.vtt'],
     ['captions (captions.vtt)', captionsFile, 'captions.vtt'],
     ['summary (summary.md)', summaryFile, 'summary.md'],
   ];
+
+  if (fs.existsSync(titleFile)) {
+    files.push(['title (title.txt)', titleFile, 'title.txt']);
+  }
 
   for (const [label, src, name] of files) {
     console.log(`Uploading ${label}...`);
@@ -181,6 +204,9 @@ try {
   console.log(`📑 Chapters:    ${publicR2Url}/${folderName}/chapters.vtt`);
   console.log(`💬 Captions:    ${publicR2Url}/${folderName}/captions.vtt`);
   console.log(`📝 Summary:     ${publicR2Url}/${folderName}/summary.md`);
+  if (fs.existsSync(titleFile)) {
+    console.log(`🏷️  Title file:  ${publicR2Url}/${folderName}/title.txt`);
+  }
   console.log(`📺 Watch URL:   ${appUrl}/v/${folderName}`);
   console.log('==========================================');
 } finally {
