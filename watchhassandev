@@ -50,6 +50,8 @@ Usage:
 Commands:
   upload          Upload video and auto-generate assets to Cloudflare R2
   uploadphantom   Upload video with pre-generated Phantom assets / metadata
+  listfiles       List video files in Cloudflare R2 bucket
+  storage         Show Cloudflare R2 bucket storage overview and usage
 
 Command Details:
   watchhassandev upload <path-to-video> [destination-filename] [--thumb <path>]
@@ -69,12 +71,41 @@ Command Details:
         --metadata <path>   Path to metadata.json (default: in video directory)
         --dry-run           Process assets without uploading to Cloudflare R2
 
+  watchhassandev listfiles [options]
+    - Lists video files in Cloudflare R2 with platform URLs, sizes, and dates
+    - Options:
+        -n, --limit <n>      Limit number of videos to display
+        -b, --bucket <name>  Cloudflare R2 bucket name
+        -r, --remote <name>  rclone remote name
+        --app-url <url>      Custom platform base URL
+        --urls-only          Print only the full platform URLs
+        --json               Output video list as formatted JSON
+        --no-color           Disable ANSI color formatting
+
+  watchhassandev storage [options] [top_n]
+    - Super concise Cloudflare R2 bucket storage overview & breakdown
+    - Displays total storage used, quota bar, and largest files
+    - Options:
+        -n, --top <n>        Number of largest files to display (default: 5)
+        -b, --bucket <name>  Cloudflare R2 bucket name
+        -r, --remote <name>  rclone remote name
+        -l, --limit <gb>     Storage limit in GB (default: 10)
+        -a, --all            Display all files instead of just top N
+        --json               Output overview as JSON
+        --no-color           Disable ANSI color formatting
+
 Examples:
   watchhassandev upload ./demo.mp4
   watchhassandev upload ./demo.mp4 custom-name --thumb ./thumb.png
   watchhassandev uploadphantom ./video/final.mp4
   watchhassandev uploadphantom ./video/final.mp4 "my-slug"
   watchhassandev uploadphantom ./video/final.mp4 --dry-run
+  watchhassandev listfiles
+  watchhassandev listfiles -n 10
+  watchhassandev listfiles --urls-only
+  watchhassandev storage
+  watchhassandev storage 10
+  watchhassandev storage --all
 EOF
 }
 
@@ -96,6 +127,12 @@ case "$COMMAND" in
         ;;
     uploadphantom|upload-phantom)
         exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/upload_via_phantom.ts" "$@"
+        ;;
+    listfiles|list-files)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/list_files.ts" "$@"
+        ;;
+    storage|storage-overview)
+        exec bun run "${ENV_ARGS[@]}" "$PROJECT_DIR/scripts/storage_overview.ts" "$@"
         ;;
     -h|--help|help)
         show_help
