@@ -11,6 +11,7 @@ export interface ResolvedVideo {
   vttUrl: string;
   captionsUrl: string;
   summaryUrl: string;
+  titleUrl: string;
   title: string;
   uuid: string | null;
   slug: string;
@@ -29,6 +30,7 @@ export function resolveVideo(id: string): ResolvedVideo {
   const vttUrl = `${folderUrl}/chapters.vtt`;
   const captionsUrl = `${folderUrl}/captions.vtt`;
   const summaryUrl = `${folderUrl}/summary.md`;
+  const titleUrl = `${folderUrl}/title.txt`;
 
   // Extract UUID if present in {filename}-{uuid}
   const uuidMatch = slug.match(UUID_REGEX);
@@ -51,6 +53,7 @@ export function resolveVideo(id: string): ResolvedVideo {
     vttUrl,
     captionsUrl,
     summaryUrl,
+    titleUrl,
     title,
     uuid,
     slug,
