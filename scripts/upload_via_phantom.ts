@@ -193,6 +193,7 @@ function generateVttFromTimestamps(rawTimestamps: RawTimestampEntry[], durationS
 const args = process.argv.slice(2);
 let customThumbArg: string | undefined;
 let customMetadataArg: string | undefined;
+let customTitleArg: string | undefined;
 let dryRun = false;
 const positionalArgs: string[] = [];
 
@@ -216,26 +217,37 @@ for (let i = 0; i < args.length; i++) {
     customMetadataArg = args[i];
   } else if (arg.startsWith('--metadata=')) {
     customMetadataArg = arg.slice('--metadata='.length);
+  } else if (arg === '--title') {
+    i++;
+    if (i >= args.length) {
+      console.error('Error: --title requires a string argument.');
+      process.exit(1);
+    }
+    customTitleArg = args[i];
+  } else if (arg.startsWith('--title=')) {
+    customTitleArg = arg.slice('--title='.length);
   } else if (arg === '--dry-run') {
     dryRun = true;
   } else if (arg === '-h' || arg === '--help') {
     console.log(`
 Usage:
-  bun scripts/upload_via_phantom.ts <path-to-video> [destination-slug] [options]
+  bun scripts/upload_via_phantom.ts <path-to-video> [custom-title] [options]
 
 Arguments:
-  <path-to-video>     Path to input video file (e.g. final.mp4)
-  [destination-slug]  Optional custom destination slug (defaults to slugified title from metadata.json)
+  <path-to-video>   Path to input video file (e.g. final.mp4)
+  [custom-title]    Optional custom video title (free-form, overrides metadata.json title)
 
 Options:
-  --thumb <path>      Path to custom poster image / thumbnail (auto-detects 'thumbnail.png' in video folder if present)
-  --metadata <path>   Path to metadata.json (default: metadata.json in video directory)
-  --dry-run           Process and generate all assets without uploading to Cloudflare R2
-  -h, --help          Show this help message
+  --title <text>     Custom video title (alternative to positional argument)
+  --thumb <path>     Path to custom poster image / thumbnail (auto-detects 'thumbnail.png' in video folder if present)
+  --metadata <path>  Path to metadata.json (default: metadata.json in video directory)
+  --dry-run          Process and generate all assets without uploading to Cloudflare R2
+  -h, --help         Show this help message
 
 Examples:
   bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4"
-  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" "my-custom-slug" --thumb "/path/to/thumb.png"
+  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" "I will turn your business into a \$100M company"
+  bun scripts/upload_via_phantom.ts "/path/to/video/final.mp4" --title "I will turn your business into a \$100M company" --thumb "/path/to/thumb.png"
 `);
     process.exit(0);
   } else if (arg.startsWith('-')) {
@@ -247,11 +259,14 @@ Examples:
 }
 
 const inputVideo = positionalArgs[0];
-const destArg = positionalArgs[1];
+// positionalArgs[1] is an optional free-form custom title (takes precedence over --title if both given)
+if (positionalArgs[1] && !customTitleArg) {
+  customTitleArg = positionalArgs[1];
+}
 
 if (!inputVideo) {
   console.error('❌ Error: Input video file is required.');
-  console.error('Usage: bun scripts/upload_via_phantom.ts <path-to-video> [destination-slug] [options]');
+  console.error('Usage: bun scripts/upload_via_phantom.ts <path-to-video> [custom-title] [options]');
   console.error('Run with --help for full usage information.');
   process.exit(1);
 }
@@ -330,9 +345,13 @@ const appUrl = (process.env.APP_URL || 'https://watch.hassandev.me').replace(/\/
 // Determine slug & folder naming conventions
 const uuid = crypto.randomUUID().toLowerCase();
 
+// Title priority: CLI arg / --title flag → metadata.json → folder/filename fallback
+const effectiveTitle: string | undefined =
+  (customTitleArg && customTitleArg.trim()) || undefined;
+
 let baseSlug = '';
-if (destArg) {
-  baseSlug = slugify(destArg);
+if (effectiveTitle) {
+  baseSlug = slugify(effectiveTitle);
 } else if (metadata.title && typeof metadata.title === 'string' && metadata.title.trim()) {
   baseSlug = slugify(metadata.title);
 } else {
@@ -350,7 +369,18 @@ if (!baseSlug) {
 const folderName = `${baseSlug}-${uuid}`;
 const destFolder = `${remote}:${bucket}/${folderName}`;
 
-const title = metadata.title || baseSlug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+// Display title: custom CLI title → metadata.json title → prettified slug
+const title =
+  effectiveTitle ||
+  metadata.title ||
+  baseSlug.replace(/[-_]+/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+
+// title.txt content: custom CLI title → metadata.json title → undefined (no file written)
+const titleFileContent: string | undefined =
+  effectiveTitle || (metadata.title && typeof metadata.title === 'string' && metadata.title.trim())
+    ? (effectiveTitle || metadata.title!.trim())
+    : undefined;
+
 const summaryText = (metadata.description || metadata.summary || '').trim();
 
 const rawTimestamps: RawTimestampEntry[] =
@@ -409,6 +439,7 @@ const srtFile = path.join(tmpDir, 'captions.srt');
 const captionsFile = path.join(tmpDir, 'captions.vtt');
 const chaptersFile = path.join(tmpDir, 'chapters.vtt');
 const summaryFile = path.join(tmpDir, 'summary.md');
+const titleFile = path.join(tmpDir, 'title.txt');
 
 const sh = (cmd: string, stdio: 'inherit' | 'ignore' = 'inherit') => execSync(cmd, { stdio });
 
@@ -456,11 +487,17 @@ try {
     console.log(`   ${idx + 1}. [${item.timestamp || item.startTime || '00:00'}] ${item.topic || item.title || `Chapter ${idx + 1}`}`);
   });
 
-  // Step 5: Generate Summary Markdown
+  // Step 5: Generate Summary Markdown & title.txt
   console.log('==========================================');
-  console.log('📝 Step 5: Preparing summary markdown (summary.md)...');
+  console.log('📝 Step 5: Preparing summary markdown (summary.md) and title.txt...');
   fs.writeFileSync(summaryFile, summaryText ? `${summaryText}\n` : `# ${title}\n`, 'utf8');
+  // Write title.txt only when an explicit title is available (CLI arg or metadata.json).
+  // Videos without a title.txt fall back to the slug-derived title (backward compat).
+  if (titleFileContent) {
+    fs.writeFileSync(titleFile, titleFileContent, 'utf8');
+  }
   console.log('✅ Summary markdown created!');
+
 
   // Step 6: Upload or Dry Run
   console.log('==========================================');
@@ -471,18 +508,25 @@ try {
     console.log(`   - Chapters:  ${chaptersFile}`);
     console.log(`   - Captions:  ${captionsFile}`);
     console.log(`   - Summary:   ${summaryFile}`);
+    if (fs.existsSync(titleFile)) {
+      console.log(`   - Title:     ${titleFile} ("${titleFileContent}")`);
+    }
     console.log(`   - Target:    ${destFolder}`);
   } else {
     console.log(`☁️  Step 6: Uploading assets to Cloudflare R2 folder: ${folderName}/ ...`);
     console.log('==========================================');
 
-    const files = [
+    const files: [string, string, string][] = [
       ['video (video.mp4)', compressedFile, 'video.mp4'],
       ['thumbnail (thumbnail.png)', thumbnailFile, 'thumbnail.png'],
       ['chapters (chapters.vtt)', chaptersFile, 'chapters.vtt'],
       ['captions (captions.vtt)', captionsFile, 'captions.vtt'],
       ['summary (summary.md)', summaryFile, 'summary.md'],
     ];
+
+    if (fs.existsSync(titleFile)) {
+      files.push(['title (title.txt)', titleFile, 'title.txt']);
+    }
 
     for (const [label, src, name] of files) {
       console.log(`Uploading ${label}...`);
@@ -499,6 +543,9 @@ try {
     console.log(`📑 Chapters:    ${publicR2Url}/${folderName}/chapters.vtt`);
     console.log(`💬 Captions:    ${publicR2Url}/${folderName}/captions.vtt`);
     console.log(`📝 Summary:     ${publicR2Url}/${folderName}/summary.md`);
+    if (fs.existsSync(titleFile)) {
+      console.log(`🏷️  Title file:  ${publicR2Url}/${folderName}/title.txt`);
+    }
     console.log(`📺 Watch URL:   ${appUrl}/v/${folderName}`);
     console.log('==========================================');
   }
