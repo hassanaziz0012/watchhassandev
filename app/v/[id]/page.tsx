@@ -17,6 +17,17 @@ function hasFileExtension(id: string): boolean {
   return /\.(mp4|mov|webm|mkv|m4v|avi|flv|wmv)$/i.test(id) || id.toLowerCase().endsWith('.mp4');
 }
 
+async function fetchTitle(url: string): Promise<string | null> {
+  try {
+    const res = await fetch(url, { next: { revalidate: 60 } });
+    if (!res.ok) return null;
+    const text = (await res.text()).trim();
+    return text || null;
+  } catch {
+    return null;
+  }
+}
+
 async function fetchSummary(url: string): Promise<string | null> {
   try {
     const res = await fetch(url, {
@@ -43,7 +54,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const video = resolveVideo(id);
-  const summary = await fetchSummary(video.summaryUrl);
+  const [summary, customTitle] = await Promise.all([
+    fetchSummary(video.summaryUrl),
+    fetchTitle(video.titleUrl),
+  ]);
+  const title = customTitle ?? video.title;
 
   const cleanDescription = summary
     ? summary
@@ -56,26 +71,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         .trim()
     : '';
 
-  const description = cleanDescription || `Watch ${video.title} streamed in high definition.`;
+  const description = cleanDescription || `Watch ${title} streamed in high definition.`;
 
   return {
-    title: `${video.title} | Watch Hassan Dev`,
+    title: `${title} | Watch Hassan Dev`,
     description,
     openGraph: {
-      title: `${video.title} | Watch Hassan Dev`,
+      title: `${title} | Watch Hassan Dev`,
       description,
       images: [
         {
           url: video.thumbnailUrl,
           width: 1280,
           height: 720,
-          alt: video.title,
+          alt: title,
         },
       ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${video.title} | Watch Hassan Dev`,
+      title: `${title} | Watch Hassan Dev`,
       description,
       images: [video.thumbnailUrl],
     },
@@ -89,7 +104,11 @@ export default async function WatchPage({ params }: PageProps) {
   }
 
   const video = resolveVideo(id);
-  const summary = await fetchSummary(video.summaryUrl);
+  const [summary, customTitle] = await Promise.all([
+    fetchSummary(video.summaryUrl),
+    fetchTitle(video.titleUrl),
+  ]);
+  const title = customTitle ?? video.title;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary-500 selection:text-white">
@@ -103,7 +122,7 @@ export default async function WatchPage({ params }: PageProps) {
         <section aria-label="Video Player Stage" className="space-y-4">
           <VideoPlayer
             src={video.videoUrl}
-            title={video.title}
+            title={title}
             poster={video.thumbnailUrl}
             chaptersUrl={video.vttUrl}
             captionsUrl={video.captionsUrl}
@@ -112,7 +131,7 @@ export default async function WatchPage({ params }: PageProps) {
           {/* Title & Channel Bar */}
           <div className="space-y-3 pt-1">
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-snug">
-              {video.title}
+              {title}
             </h1>
 
             {/* YouTube-style Channel Bar */}
